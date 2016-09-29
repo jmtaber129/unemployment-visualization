@@ -21,6 +21,26 @@
     border-color: #AAA;
     overflow-y: scroll;
   }
+  #stateOptions {
+    height: 200px;
+    width: 150px;
+    border-style: solid;
+    border-color: #CCC;
+    overflow-y: scroll;
+  }
+  #comparisonOptions {
+    float: left;
+    width: 400px;
+    margin: 0 auto;
+  }
+  #comparisonSelectors {
+    width: 200px;
+    float: left;
+  }
+  #comparisonDropdowns {
+    width: 200px;
+    float: right;
+  }
   #options { 
     float:right;
     width: 35%;
@@ -38,7 +58,52 @@
   <div id="options">
     <h1>US Unemployment Visualization</h1>
     <p>Click to delete.</p>
+    <h4>States shown:</h4>
+    <div id="stateOptions">
+      <!-- State checkboxes -->
+      <input type="checkbox" name="alabama"> Alabama<br>
+      <input type="checkbox" name="texas" value="Texas"> Texas<br>
+      <input type="checkbox" name="wyoming"> Wyoming<br>
+    </div>
+    <div id="comparisonOptions">
+      <h4>Compare to:</h4>
+      <input type="radio" name="comparison" value="none" class="dropdownSelector"> No Comparison<br>
+      <input type="radio" name="comparison" value="state" display="inline"> State:
+      <br>&emsp;&emsp;
+      <select name="states" disabled>
+        <option value="texas">Texas</option>
+        <option value="nationalAverage">National Average</option>
+      </select>
+      <br>
+      <input type="radio" name="comparison" value="years"> Years:
+      <br>&emsp;&emsp;
+      <select name="years" disabled>
+        <option value="1978">1978</option>
+        <option value="2016">2016</option>
+      </select>
+      &ensp;and&ensp;
+      <select name="years" disabled>
+        <option value="1978">1978</option>
+        <option value="2016">2016</option>
+      </select>
+      <br>
+      <div id="compareStates" name="compareStates" style="display: none">
+        <select name="states">
+          <option value="texas">Texas</option>
+          <option value="nationalAverage">National Average</option>
+        </select>
+      </div>
+      <div id="compareYears" name="compareYears" style="display: none">
+        <select name="years">
+          <option value="1978">1978</option>
+          <option value="2016">2016</option>
+        </select>
+      </div>
+    </div>
   </div>
+  
+  
+  
   <script type="text/javascript">
     //Width and height
     var w = $("#unemploymentCharts").width() * 0.95;
