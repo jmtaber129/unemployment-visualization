@@ -8,52 +8,59 @@
   html {
     height: 100%;
   }
-  body {
+  body, table {
     font: 12px Arial;
+  }
+  h4 {
+    margin-top: 0px;
+    margin-bottom: 5px;
   }
   #unemploymentCharts { 
     float:left;
     width: 60%;
     height: 95%;
-    margin: 12px;
+    margin: 0px 0px 0px 0.6%;
     padding: 10px;
     border-style: solid;
     border-color: #AAA;
     overflow-y: scroll;
   }
-  #stateOptions {
-    height: 200px;
-    width: 150px;
-    border-style: solid;
-    border-color: #CCC;
-    overflow-y: scroll;
-  }
-  #comparisonOptions {
-    float: left;
-    width: 400px;
-    margin: 0 auto;
-  }
-  #comparisonSelectors {
-    width: 200px;
-    float: left;
-  }
-  #comparisonDropdowns {
-    width: 200px;
-    float: right;
-  }
   #options { 
     float:right;
     width: 35%;
     height: 95%;
-    margin: 12px;
     padding: 10px;
+  }
+  #stateOptions {
+    height: 200px;
+    width: 35%;
+    float: left;
+    border-style: solid;
+    border-color: #CCC;
+    overflow-y: scroll;
+    margin: 0px 5px 5px 0px;
+  }
+  #comparisonOptions {
+    float: left;
+    width: 50%;
+    margin: 0 auto;
+  }
+  #timeOptions {
+    float: left;
+    width: 50%;
+    margin-bottom: 7px;
+  }
+  #usMap {
+    width:100%;
+    display: inline-block;
   }
 </style>
 
 <body>
-  <!-- Where the unemployment visualization go -->
+  <!-- Where the unemployment visualization svgs go -->
   <div id="unemploymentCharts">
   </div>
+  
   <!-- All the options for the visualization (states, years, etc.) -->
   <div id="options">
     <h1>US Unemployment Visualization</h1>
@@ -61,13 +68,67 @@
     <h4>States shown:</h4>
     <div id="stateOptions">
       <!-- State checkboxes -->
+      <input type="checkbox" name="all"> Select All<br>
       <input type="checkbox" name="alabama"> Alabama<br>
       <input type="checkbox" name="texas" value="Texas"> Texas<br>
       <input type="checkbox" name="wyoming"> Wyoming<br>
     </div>
+    <div id="timeOptions">
+      <h4>Time Period:</h4>
+      <table>
+        <tr>
+          <td>
+            From: &ensp;
+          </td>
+          <td>
+            <select name="month">
+              <option value="1">Jan</option>
+              <option value="2">Feb</option>
+              <option value="3">Mar</option>
+              <option value="4">Apr</option>
+              <option value="5">May</option>
+              <option value="6">Jun</option>
+              <option value="7">Jul</option>
+              <option value="8">Aug</option>
+              <option value="9">Sep</option>
+              <option value="10">Oct</option>
+              <option value="11">Nov</option>
+              <option value="12">Dec</option>
+            </select>
+            <select>
+              <option value="1978">1978</option>
+              <option value="2016">2016</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>To: &emsp;&ensp;</td>
+          <td>
+            <select name="month">
+              <option value="1">Jan</option>
+              <option value="2">Feb</option>
+              <option value="3">Mar</option>
+              <option value="4">Apr</option>
+              <option value="5">May</option>
+              <option value="6">Jun</option>
+              <option value="7">Jul</option>
+              <option value="8">Aug</option>
+              <option value="9">Sep</option>
+              <option value="10">Oct</option>
+              <option value="11">Nov</option>
+              <option value="12">Dec</option>
+            </select>
+            <select>
+              <option value="1978">1978</option>
+              <option value="2016">2016</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
     <div id="comparisonOptions">
       <h4>Compare to:</h4>
-      <input type="radio" name="comparison" value="none" class="dropdownSelector"> No Comparison<br>
+      <input type="radio" name="comparison" value="none" checked> No Comparison<br>
       <input type="radio" name="comparison" value="state" display="inline"> State:
       <br>&emsp;&emsp;
       <select name="states" disabled>
