@@ -200,8 +200,23 @@
         .attr("d", path)
         .style("stroke", "#fff")
         .style("stroke-width", "1")
-        .style("fill", "#AAA");
+        .style("fill", "#AAA")
+        .on("mouseover", mapMouseOver)
+        .on("mouseout", mapMouseOut)
+        .on("click", mapClick);
     });
+    
+    function mapMouseOver() {
+      d3.select(this).style("opacity","0.7");
+    }
+    
+    function mapMouseOut() {
+      d3.select(this).style("opacity","1");
+    }
+    
+    function mapClick() {
+      d3.select(this).style("fill","orange");
+    }
 
     
     //Width and height
