@@ -15,6 +15,12 @@
     margin-top: 0px;
     margin-bottom: 5px;
   }
+  .inactive {
+    fill: #AAA;
+  }
+  .active {
+    fill: orange;
+  }
   #unemploymentCharts { 
     float:left;
     width: 60%;
@@ -68,10 +74,10 @@
     <h4>States shown:</h4>
     <div id="stateOptions">
       <!-- State checkboxes -->
-      <input type="checkbox" name="all"> Select All<br>
-      <input type="checkbox" name="alabama"> Alabama<br>
-      <input type="checkbox" name="texas" value="Texas"> Texas<br>
-      <input type="checkbox" name="wyoming"> Wyoming<br>
+      <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this)> Select All<br>
+      <input type="checkbox" id="alabama" name="stateSelection"> Alabama<br>
+      <input type="checkbox" id="texas" name="stateSelection" value="Texas"> Texas<br>
+      <input type="checkbox" id="wyoming" name="stateSelection"> Wyoming<br>
     </div>
     <div id="timeOptions">
       <h4>Time Period:</h4>
@@ -81,7 +87,7 @@
             From: &ensp;
           </td>
           <td>
-            <select name="month">
+            <select class="timePeriodSelector" name="month">
               <option value="1">Jan</option>
               <option value="2">Feb</option>
               <option value="3">Mar</option>
@@ -95,7 +101,7 @@
               <option value="11">Nov</option>
               <option value="12">Dec</option>
             </select>
-            <select>
+            <select class="timePeriodSelector" name="year">
               <option value="1978">1978</option>
               <option value="2016">2016</option>
             </select>
@@ -104,7 +110,7 @@
         <tr>
           <td>To: &emsp;&ensp;</td>
           <td>
-            <select name="month">
+            <select class="timePeriodSelector" name="month">
               <option value="1">Jan</option>
               <option value="2">Feb</option>
               <option value="3">Mar</option>
@@ -118,7 +124,7 @@
               <option value="11">Nov</option>
               <option value="12">Dec</option>
             </select>
-            <select>
+            <select class="timePeriodSelector" name="year">
               <option value="1978">1978</option>
               <option value="2016">2016</option>
             </select>
@@ -131,43 +137,29 @@
       <input type="radio" name="comparison" value="none" checked> No Comparison<br>
       <input type="radio" name="comparison" value="state" display="inline"> State:
       <br>&emsp;&emsp;
-      <select name="states" disabled>
+      <select class="stateComparisonOptions" name="states" disabled>
         <option value="texas">Texas</option>
         <option value="nationalAverage">National Average</option>
       </select>
       <br>
       <input type="radio" name="comparison" value="years"> Years:
       <br>&emsp;&emsp;
-      <select name="years" disabled>
+      <select class="yearComparisonOptions" name="years" disabled>
         <option value="1978">1978</option>
         <option value="2016">2016</option>
       </select>
       &ensp;and&ensp;
-      <select name="years" disabled>
+      <select class="yearComparisonOptions" name="years" disabled>
         <option value="1978">1978</option>
         <option value="2016">2016</option>
       </select>
       <br>
-      <div id="compareStates" name="compareStates" style="display: none">
-        <select name="states">
-          <option value="texas">Texas</option>
-          <option value="nationalAverage">National Average</option>
-        </select>
-      </div>
-      <div id="compareYears" name="compareYears" style="display: none">
-        <select name="years">
-          <option value="1978">1978</option>
-          <option value="2016">2016</option>
-        </select>
-      </div>
     </div>
     <div id="usMap">
       <svg></svg>
     </div>
     
   </div>
-  
-  
   
   <script type="text/javascript">
     // US map drawing.
@@ -190,6 +182,13 @@
                 .attr("width", width)
                 .attr("height", height);
     
+    mapSvg.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height)
+      .style("fill", "#FFF")
+      .on("click", mapBackgroundClick);
+    
     d3.json("us-states.json", function(json) {
       
     // Bind the data to the SVG and create one path per GeoJSON feature
@@ -200,7 +199,7 @@
         .attr("d", path)
         .style("stroke", "#fff")
         .style("stroke-width", "1")
-        .style("fill", "#AAA")
+        .classed("inactive", true)
         .on("mouseover", mapMouseOver)
         .on("mouseout", mapMouseOut)
         .on("click", mapClick);
@@ -215,7 +214,40 @@
     }
     
     function mapClick() {
-      d3.select(this).style("fill","orange");
+      var _this = d3.select(this);
+      var active = _this.classed("active");
+      
+      _this.classed("active", !active);
+      _this.classed("inactive", active);
+    }
+    
+    function mapBackgroundClick() {
+      mapSvg.selectAll("path").classed("inactive", true);
+      mapSvg.selectAll("path").classed("active", false);
+    }
+    
+    $(document.getElementsByName("comparison")).on("click", function() {
+      var _this = this;
+      if (_this.value == "state") {
+        $(".stateComparisonOptions").attr("disabled", false);
+        $(".yearComparisonOptions").attr("disabled", true);
+        $(".timePeriodSelector").attr("disabled", false);
+      } else if (_this.value == "years") {
+        $(".stateComparisonOptions").attr("disabled", true);
+        $(".yearComparisonOptions").attr("disabled", false);
+        $(".timePeriodSelector").attr("disabled", true);
+      } else {
+        $(".stateComparisonOptions").attr("disabled", true);
+        $(".yearComparisonOptions").attr("disabled", true);
+        $(".timePeriodSelector").attr("disabled", false);
+      }
+    });
+    
+    function selectAll(_this) {
+      checkboxes = document.getElementsByName(_this.name);
+      for(var i=0, n=checkboxes.length;i<n;i++) {
+        checkboxes[i].checked = _this.checked;
+      }
     }
 
     
