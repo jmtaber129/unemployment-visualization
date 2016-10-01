@@ -286,6 +286,12 @@
           return y(d.unemployment);
         });
     
+    var zeroline = d3.svg.line()
+        .x(function(d) {
+          return x(d.date);
+        })
+        .y(y(0));
+    
     
     // Process the unemployment data and make the charts.
     d3.csv("unemployment.csv", function(data) {
@@ -339,9 +345,18 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
-      // Draw the line.
       svgCharts.append("path")
         .attr("class", "line")
+        .attr("d", function(d) {
+          return zeroline(d.series[d.state]);
+        });
+      
+      // Draw the line.
+      svgCharts.select("path")
+        .attr("class", "line")
+        .transition()
+        .duration(1000)
+        .ease("cubic-out")
         .attr("d", function(d) {
           return valueline(d.series[d.state]);
         });
@@ -356,7 +371,15 @@
         .attr("class", "y axis")
         .call(yAxis);
       
-      
+      svgCharts.append("text")
+        .datum(function(d) { return d.state; })
+        .attr("x", w)
+        .attr("y", margin.top)
+        .attr("text-anchor", "end")
+        .style("font", "20px Arial")
+        .attr("fill", "#888")
+        .text(function(d) { return d; });
+        
       
     });
 
