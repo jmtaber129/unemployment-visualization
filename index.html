@@ -355,6 +355,7 @@
       svgCharts.select("path")
         .attr("class", "line")
         .transition()
+        .delay(100)
         .duration(1000)
         .ease("cubic-out")
         .attr("d", function(d) {
