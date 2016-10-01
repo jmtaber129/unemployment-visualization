@@ -247,6 +247,7 @@
       checkboxes = document.getElementsByName(_this.name);
       for(var i=0, n=checkboxes.length;i<n;i++) {
         checkboxes[i].checked = _this.checked;
+        changeChartDisplay(checkboxes[i], checkboxes[i].id);
       }
     }
 
@@ -254,6 +255,8 @@
     var margin = {top: 30, right: 20, bottom: 30, left: 50};
     var w = $("#unemploymentCharts").width() * 0.95 - margin.left - margin.right;
     var h = 150 - margin.bottom - margin.top;
+    var svgHeight = h + margin.top + margin.bottom;
+    var svgWidth = w + margin.left + margin.right;
     
     // Date-parser.
     var parseDate = d3.time.format("%b-%Y").parse;
@@ -322,10 +325,7 @@
       x.domain(d3.extent(data, function(d) { return d.date; }));
       y.domain([0, d3.max(data, function(d) { return d.unemployment; })])
       
-      // Create the svgs for the charts.
-      var svgHeight = h + margin.top + margin.bottom;
-      var svgWidth = w + margin.left + margin.right;
-      
+      // Create the svgs for the charts.      
       svgCharts = d3.select("#unemploymentCharts").selectAll("svg")
         .data(stateChartData)
         .enter()
@@ -391,25 +391,28 @@
           .attr("type", "checkbox")
           .attr("name", "stateSelection")
           .attr("id", function(d) { return d.replace(/\s+/g, ''); })
-          .on("click", function(d) {
-            var stateChart = d3.select("#unemploymentCharts")
-                              .select("#" + d.replace(/\s+/g, ''));
-            if (d3.select(this).property("checked")) {
-              stateChart.transition()
-                .attr("height", svgHeight)
-                .attr("opacity", 1);
-            } else {
-              stateChart.transition()
-                .attr("height", 0)
-                .attr("opacity", 0);
-            }
-          });
+          .on("click", function(d) { return changeChartDisplay(this, d); });
         option.append("text")
           .text(d.state);
         option.append("br");
       });
       
+      
     });
+    
+    function changeChartDisplay(_this, d) {
+      var stateChart = d3.select("#unemploymentCharts")
+                        .select("#" + d.replace(/\s+/g, ''));
+      if (d3.select(_this).property("checked")) {
+        stateChart.transition()
+          .attr("height", svgHeight)
+          .attr("opacity", 1);
+      } else {
+        stateChart.transition()
+          .attr("height", 0)
+          .attr("opacity", 0);
+      }
+    }
 
 </script>
 </body>
