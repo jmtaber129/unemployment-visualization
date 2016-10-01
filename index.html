@@ -92,9 +92,6 @@
     <div id="stateOptions">
       <!-- State checkboxes -->
       <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this)> Select All<br>
-      <input type="checkbox" id="alabama" name="stateSelection"> Alabama<br>
-      <input type="checkbox" id="texas" name="stateSelection" value="Texas"> Texas<br>
-      <input type="checkbox" id="wyoming" name="stateSelection"> Wyoming<br>
     </div>
     <div id="timeOptions">
       <h4>Time Period:</h4>
@@ -217,7 +214,7 @@
         .enter()
         .append("path")
         .attr("d", path)
-        .attr("id", function(d) { return d.properties.name; })
+        .attr("id", function(d) { return d.properties.name.replace(/\s+/g, ''); })
         .style("stroke", "#fff")
         .style("stroke-width", "1")
         .classed("inactive", true)
@@ -326,22 +323,25 @@
       y.domain([0, d3.max(data, function(d) { return d.unemployment; })])
       
       // Create the svgs for the charts.
+      var svgHeight = h + margin.top + margin.bottom;
+      var svgWidth = w + margin.left + margin.right;
+      
       svgCharts = d3.select("#unemploymentCharts").selectAll("svg")
         .data(stateChartData)
         .enter()
         .append("svg")
         .style("display", "block")
-        .attr("width", w +  margin.left + margin.right)
-        .attr("height", h + margin.top + margin.bottom)
+        .attr("id", function(d) { return d.state.replace(/\s+/g, ''); })
+        .attr("width", svgWidth)
+        .attr("height", svgHeight)
         .on("mouseover", function(d) {
-          d3.select("#usMap").select("#" + d.state)
+          d3.select("#usMap").select("#" + d.state.replace(/\s+/g, ''))
             .classed("chartHover", true);
         })
         .on("mouseout", function(d) {
-          d3.select("#usMap").select("#" + d.state)
+          d3.select("#usMap").select("#" + d.state.replace(/\s+/g, ''))
             .classed("chartHover", false);
         })
-        .style("margin-top", 2)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
@@ -381,6 +381,33 @@
         .attr("fill", "#888")
         .text(function(d) { return d; });
         
+      //Populate the state selection list.
+      var stateOptions = d3.select("#stateOptions");
+      stateChartData.forEach(function(d) {
+        var option = stateOptions
+            .datum(d.state)
+            .append("label");
+        option.append("input")
+          .attr("type", "checkbox")
+          .attr("name", "stateSelection")
+          .attr("id", function(d) { return d.replace(/\s+/g, ''); })
+          .on("click", function(d) {
+            var stateChart = d3.select("#unemploymentCharts")
+                              .select("#" + d.replace(/\s+/g, ''));
+            if (d3.select(this).property("checked")) {
+              stateChart.transition()
+                .attr("height", svgHeight)
+                .attr("opacity", 1);
+            } else {
+              stateChart.transition()
+                .attr("height", 0)
+                .attr("opacity", 0);
+            }
+          });
+        option.append("text")
+          .text(d.state);
+        option.append("br");
+      });
       
     });
 
