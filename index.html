@@ -91,7 +91,7 @@
     <h4>States shown:</h4>
     <div id="stateOptions">
       <!-- State checkboxes -->
-      <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this)> Select All<br>
+      <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this) checked> Select All<br>
     </div>
     <div id="timeOptions">
       <h4>Time Period:</h4>
@@ -217,12 +217,10 @@
         .attr("id", function(d) { return d.properties.name.replace(/\s+/g, ''); })
         .style("stroke", "#fff")
         .style("stroke-width", "1")
-        .classed("inactive", true)
+        .classed("inactive", false)
+        .classed("active", true)
         .on("click", function() {
-          var _this = d3.select(this);
-          var active = _this.classed("active");
-          _this.classed("active", !active);
-          _this.classed("inactive", active);
+          changeChartDisplay(this.id);
         });
     });
     
@@ -246,8 +244,9 @@
     function selectAll(_this) {
       checkboxes = document.getElementsByName(_this.name);
       for(var i=0, n=checkboxes.length;i<n;i++) {
-        checkboxes[i].checked = _this.checked;
-        changeChartDisplay(checkboxes[i], checkboxes[i].id);
+        if (checkboxes[i].checked != _this.checked) {
+          changeChartDisplay(checkboxes[i].id);
+        }
       }
     }
 
@@ -332,6 +331,7 @@
         .append("svg")
         .style("display", "block")
         .attr("id", function(d) { return d.state.replace(/\s+/g, ''); })
+        .classed("chartActive", true)
         .attr("width", svgWidth)
         .attr("height", svgHeight)
         .on("mouseover", function(d) {
@@ -385,13 +385,14 @@
       var stateOptions = d3.select("#stateOptions");
       stateChartData.forEach(function(d) {
         var option = stateOptions
-            .datum(d.state)
-            .append("label");
+            .append("label")
+            .datum(d.state);
         option.append("input")
           .attr("type", "checkbox")
+          .attr("checked", true)
           .attr("name", "stateSelection")
           .attr("id", function(d) { return d.replace(/\s+/g, ''); })
-          .on("click", function(d) { return changeChartDisplay(this, d); });
+          .on("click", changeChartDisplay);
         option.append("text")
           .text(d.state);
         option.append("br");
@@ -400,18 +401,32 @@
       
     });
     
-    function changeChartDisplay(_this, d) {
+    function changeChartDisplay(d) {
+      var id = d.replace(/\s+/g, '');
       var stateChart = d3.select("#unemploymentCharts")
-                        .select("#" + d.replace(/\s+/g, ''));
-      if (d3.select(_this).property("checked")) {
+                        .select("#" + id);
+      
+      var stateMap = d3.select("#usMap").select("#" + id);
+      
+      var stateCheckBox = d3.select("#stateOptions").select("#" + id);
+      
+      var active = stateChart.classed("chartActive");
+      
+      if (!active) {
+        stateCheckBox.property("checked", true);
         stateChart.transition()
           .attr("height", svgHeight)
           .attr("opacity", 1);
+        
       } else {
+        stateCheckBox.property("checked", false);
         stateChart.transition()
           .attr("height", 0)
           .attr("opacity", 0);
       }
+      stateChart.classed("chartActive", !active);
+      stateMap.classed("active", !active);
+      stateMap.classed("inactive", active);
     }
 
 </script>
