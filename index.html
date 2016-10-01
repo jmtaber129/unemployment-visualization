@@ -202,8 +202,11 @@
       .attr("height", height)
       .style("fill", "#FFF")
       .on("click", function() {
-        mapSvg.selectAll("path").classed("inactive", true);
-        mapSvg.selectAll("path").classed("active", false);
+        mapSvg.selectAll("path").each(function(d) {
+          if (d3.select(this).classed("active")) {
+            changeChartDisplay(this.id);
+          }
+        });
       });
     
     d3.json("us-states.json", function(json) {
