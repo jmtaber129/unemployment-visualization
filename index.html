@@ -26,6 +26,12 @@
     stroke-width: 1;
     fill: none;
   }
+  path:hover {
+    opacity: 0.7;
+  }
+  .chartHover {
+    fill: #FF0;
+  }
   .axis path,
   .axis line {
       fill: none;
@@ -198,7 +204,10 @@
       .attr("width", width)
       .attr("height", height)
       .style("fill", "#FFF")
-      .on("click", mapBackgroundClick);
+      .on("click", function() {
+        mapSvg.selectAll("path").classed("inactive", true);
+        mapSvg.selectAll("path").classed("active", false);
+      });
     
     d3.json("us-states.json", function(json) {
       
@@ -208,34 +217,17 @@
         .enter()
         .append("path")
         .attr("d", path)
+        .attr("id", function(d) { return d.properties.name; })
         .style("stroke", "#fff")
         .style("stroke-width", "1")
         .classed("inactive", true)
-        .on("mouseover", mapMouseOver)
-        .on("mouseout", mapMouseOut)
-        .on("click", mapClick);
+        .on("click", function() {
+          var _this = d3.select(this);
+          var active = _this.classed("active");
+          _this.classed("active", !active);
+          _this.classed("inactive", active);
+        });
     });
-    
-    function mapMouseOver() {
-      d3.select(this).style("opacity","0.7");
-    }
-    
-    function mapMouseOut() {
-      d3.select(this).style("opacity","1");
-    }
-    
-    function mapClick() {
-      var _this = d3.select(this);
-      var active = _this.classed("active");
-      
-      _this.classed("active", !active);
-      _this.classed("inactive", active);
-    }
-    
-    function mapBackgroundClick() {
-      mapSvg.selectAll("path").classed("inactive", true);
-      mapSvg.selectAll("path").classed("active", false);
-    }
     
     $(document.getElementsByName("comparison")).on("click", function() {
       var _this = this;
@@ -341,6 +333,14 @@
         .style("display", "block")
         .attr("width", w +  margin.left + margin.right)
         .attr("height", h + margin.top + margin.bottom)
+        .on("mouseover", function(d) {
+          d3.select("#usMap").select("#" + d.state)
+            .classed("chartHover", true);
+        })
+        .on("mouseout", function(d) {
+          d3.select("#usMap").select("#" + d.state)
+            .classed("chartHover", false);
+        })
         .style("margin-top", 2)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
