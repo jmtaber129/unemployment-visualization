@@ -24,6 +24,9 @@
   .area.below {
     fill: steelblue;
   }
+  .area.above {
+    fill: rgb(145,207,96);
+  }
   .baseLine { 
     stroke: black;
     stroke-width: 2;
@@ -380,15 +383,48 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
-      svgCharts.append("defs").append("clipPath")
-          .attr("id", "clip")
+      var defs = svgCharts.append("defs");
+      
+      defs.append("clipPath")
+          .attr("id", "sideClip")
         .append("rect")
           .attr("width", w)
           .attr("height", h);
       
+      defs.append("clipPath")
+          .attr("id", function(d) {
+            return "clip-below-" + d.state;
+          })
+          .attr("clip-path", "url(#sideClip)")
+        .append("path")
+          .attr("d", function(d) {
+            return valueArea.y0(y(0))(d.series[d.state]);
+          });
+      
+      defs.append("clipPath")
+          .attr("id", function(d) {
+            return "clip-above-" + d.state;
+          })
+          .attr("clip-path", "url(#sideClip)")
+        .append("path")
+          .attr("d", function(d) {
+            return valueArea.y0(0)(d.series[d.state]);
+          });
+      
       svgCharts.append("path")
-        .attr("clip-path", "url(#clip)")
+        .attr("clip-path", function(d) {
+          return "url(#clip-below-" + d.state + ")";
+        })
         .attr("class", "area below")
+        .attr("d", function(d) {
+          return zeroArea(d.series[d.state]);
+        });
+      
+      svgCharts.append("path")
+        .attr("clip-path", function(d) {
+          return "url(#clip-above-" + d.state + ")";
+        })
+        .attr("class", "area above")
         .attr("d", function(d) {
           return zeroArea(d.series[d.state]);
         });
@@ -400,7 +436,22 @@
         .duration(1000)
         .ease("cubic-out")
         .attr("d", function(d) {
-          return valueArea.y0(y(0))(d.series[d.state]);
+          var y0 = function(a,i) {
+            return y(d.series["Texas"][i].unemployment);
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
+        });
+      
+      svgCharts.select(".area.above")
+        .transition()
+        .delay(100)
+        .duration(1000)
+        .ease("cubic-out")
+        .attr("d", function(d) {
+          var y0 = function(a,i) {
+            return y(d.series["Texas"][i].unemployment);
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
         });
       
       // Draw the axes.
