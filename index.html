@@ -150,13 +150,13 @@
     </div>
     <div id="comparisonOptions">
       <h4>Compare to:</h4>
-      <input type="radio" name="comparison" value="none" checked> No Comparison<br>
-      <input type="radio" name="comparison" value="state" display="inline"> State:
+      <input type="radio" name="comparison" id="noComparison" value="none" checked> No Comparison<br>
+      <input type="radio" name="comparison" id="stateComparison" value="state" display="inline"> State:
       <br>&emsp;&emsp;
       <select id="stateComparisonOptions" name="states" disabled>
       </select>
       <br>
-      <input type="radio" name="comparison" value="years"> Years:
+      <input type="radio" name="comparison" id="yearComparison" value="years"> Years:
       <br>&emsp;&emsp;
       <select class="yearComparisonOptions" name="years" disabled>
         <option value="1978">1978</option>
@@ -367,7 +367,7 @@
           .attr("type", "checkbox")
           .attr("checked", true)
           .attr("name", "stateSelection")
-          .attr("id", function(d) { return d.replace(/\s+/g, ''); })
+          .attr("id", removeWhitespace)
           .on("click", changeChartDisplay);
         option.append("text")
           .text(d.state);
@@ -375,9 +375,7 @@
         
         var comparison = stateComparisons.append("option")
             .datum(d.state)
-            .attr("value", function(d) {
-              return d.replace(/\s+/g, '');
-            })
+            .attr("value", removeWhitespace)
             .text(d.state);
             
       });
@@ -392,16 +390,16 @@
         .enter()
         .append("svg")
         .style("display", "block")
-        .attr("id", function(d) { return d.state.replace(/\s+/g, ''); })
+        .attr("id", function(d) { return removeWhitespace(d.state); })
         .classed("chartActive", true)
         .attr("width", svgWidth)
         .attr("height", svgHeight)
         .on("mouseover", function(d) {
-          d3.select("#usMap").select("#" + d.state.replace(/\s+/g, ''))
+          d3.select("#usMap").select("#" + removeWhitespace(d.state))
             .classed("chartHover", true);
         })
         .on("mouseout", function(d) {
-          d3.select("#usMap").select("#" + d.state.replace(/\s+/g, ''))
+          d3.select("#usMap").select("#" + removeWhitespace(d.state))
             .classed("chartHover", false);
         })
         .append("g")
@@ -417,7 +415,7 @@
       
       defs.append("clipPath")
           .attr("id", function(d) {
-            return "clip-below-" + d.state;
+            return "clip-below-" + removeWhitespace(d.state);
           })
           .attr("clip-path", "url(#sideClip)")
         .append("path")
@@ -425,7 +423,7 @@
       
       defs.append("clipPath")
           .attr("id", function(d) {
-            return "clip-above-" + d.state;
+            return "clip-above-" + removeWhitespace(d.state);
           })
           .attr("clip-path", "url(#sideClip)")
         .append("path")
@@ -433,7 +431,7 @@
       
       svgCharts.append("path")
         .attr("clip-path", function(d) {
-          return "url(#clip-below-" + d.state + ")";
+          return "url(#clip-below-" + removeWhitespace(d.state) + ")";
         })
         .attr("class", "area below")
         .attr("d", function(d) {
@@ -442,7 +440,7 @@
       
       svgCharts.append("path")
         .attr("clip-path", function(d) {
-          return "url(#clip-above-" + d.state + ")";
+          return "url(#clip-above-" + removeWhitespace(d.state) + ")";
         })
         .attr("class", "area above")
         .attr("d", function(d) {
@@ -496,6 +494,10 @@
       
     });
     
+    function removeWhitespace(str) {
+      return str.replace(/\s+/g, '');
+    }
+    
     function updateClipBelow(d) {
       return valueArea.y0(y(0))(d.series[d.state]);
     }
@@ -532,8 +534,20 @@
       stateMap.classed("inactive", active);
     }
     
+    function updateChartNoComparison() {
+      this.select(".area.below")
+        .attr("d", function(d) {
+          return valueArea.y0(y(0))(d.series[d.state]);
+        });
+      
+      this.select(".x.axis")
+        .call(xAxis);
+    }
+    
     function updateCharts() {
       // Get chart settings.
+      
+      // Get time interval and adjust scale.
       var fromYear = document.getElementById("fromYear").value;
       var fromMonth = document.getElementById("fromMonth").value;
       var toYear = document.getElementById("toYear").value;
@@ -544,31 +558,23 @@
       
       // Update the charts.
       var svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
+      
+      if (document.getElementById("noComparison").checked) {
+        
+      } else if (document.getElementById("stateComparison").checked) {
+        
+      } else {
+        
+      }
+      
       svgCharts[0].forEach(function(d) {
         // If the chart is active, transition.  Otherwise, don't.
         d = d3.select(d);
         if (d.classed("chartActive")) {
-          d.select(".area.below")
-            .transition()
-            .duration(1000)
-            .attr("d", function(d) {
-              return valueArea.y0(y(0))(d.series[d.state]);
-            });
-
-          // Draw the axes.
-          d.select(".x.axis")
-            .transition()
-            .duration(1000)
-            .call(xAxis);
+          d.transition().duration(1000)
+            .call(updateChartNoComparison);
         } else {
-          d.select(".area.below")
-            .attr("d", function(d) {
-              return valueArea.y0(y(0))(d.series[d.state]);
-            });
-
-          // Draw the axes.
-          d.select(".x.axis")
-            .call(xAxis);
+          d.call(updateChartNoComparison);
         }
       /*
       svgCharts.select(".yAxis")
