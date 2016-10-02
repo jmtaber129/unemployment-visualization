@@ -147,7 +147,6 @@
           </td>
         </tr>
       </table>
-      <button id="updatePeriod" onclick=updatePeriod()>Update Time Period</button>
     </div>
     <div id="comparisonOptions">
       <h4>Compare to:</h4>
@@ -172,7 +171,7 @@
       </select>
       <br>
       <br>
-      <button id="updateComparison" onclick=updateComparison()>Update Comparison</button>
+      <button id="updateCharts" onclick=updateCharts()>Update Charts</button>
     </div>
     <div id="usMap">
       <svg></svg>
@@ -397,9 +396,7 @@
           })
           .attr("clip-path", "url(#sideClip)")
         .append("path")
-          .attr("d", function(d) {
-            return valueArea.y0(y(0))(d.series[d.state]);
-          });
+          .attr("d", updateClipBelow);
       
       defs.append("clipPath")
           .attr("id", function(d) {
@@ -407,9 +404,7 @@
           })
           .attr("clip-path", "url(#sideClip)")
         .append("path")
-          .attr("d", function(d) {
-            return valueArea.y0(0)(d.series[d.state]);
-          });
+          .attr("d", updateClipAbove);
       
       svgCharts.append("path")
         .attr("clip-path", function(d) {
@@ -493,6 +488,14 @@
       
     });
     
+    function updateClipBelow(d) {
+      return valueArea.y0(y(0))(d.series[d.state]);
+    }
+    
+    function updateClipAbove(d) {
+      return valueArea.y0(0)(d.series[d.state]);
+    }
+    
     function changeChartDisplay(d) {
       var id = d.replace(/\s+/g, '');
       var stateChart = d3.select("#unemploymentCharts")
@@ -521,7 +524,8 @@
       stateMap.classed("inactive", active);
     }
     
-    function updatePeriod() {
+    function updateCharts() {
+      // Get chart settings.
       var fromYear = document.getElementById("fromYear").value;
       var fromMonth = document.getElementById("fromMonth").value;
       var toYear = document.getElementById("toYear").value;
