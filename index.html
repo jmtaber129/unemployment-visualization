@@ -21,7 +21,7 @@
   .active {
     fill: orange;
   }
-  .area {
+  .area.below {
     fill: steelblue;
   }
   .baseLine { 
@@ -29,7 +29,7 @@
     stroke-width: 2;
     fill: none;
   }
-  path:hover {
+  #usMap path:hover {
     opacity: 0.7;
   }
   .chartHover {
@@ -168,6 +168,8 @@
         <option value="2016">2016</option>
       </select>
       <br>
+      <br>
+      <button id="updateComparison" onclick=updateComparison()>Update Comparison</button>
     </div>
     <div id="usMap">
       <svg></svg>
@@ -300,11 +302,11 @@
         })
         .y(y(0));
     
+    // Define the area.
     var valueArea = d3.svg.area()
         .x(function(d) {
           return x(d.date);
         })
-        .y0(y(0))
         .y1(function(d) {
           return y(d.unemployment);
         });
@@ -386,20 +388,19 @@
       
       svgCharts.append("path")
         .attr("clip-path", "url(#clip)")
-        .attr("class", "area")
+        .attr("class", "area below")
         .attr("d", function(d) {
           return zeroArea(d.series[d.state]);
         });
       
-      // Draw the line.
-      svgCharts.select("path")
-        .attr("class", "area")
+      // Draw the area.
+      svgCharts.select(".area.below")
         .transition()
         .delay(100)
         .duration(1000)
         .ease("cubic-out")
         .attr("d", function(d) {
-          return valueArea(d.series[d.state]);
+          return valueArea.y0(y(0))(d.series[d.state]);
         });
       
       // Draw the axes.
@@ -479,19 +480,33 @@
       x.domain([fromDate, toDate]);
       
       // Update the charts.
-      svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
-      svgCharts.select("path")
-        .transition()
-        .duration(1000)
-        .attr("d", function(d) {
-          return valueArea(d.series[d.state]);
-        });
-      
-      // Draw the axes.
-      svgCharts.select(".x.axis")
-        .transition()
-        .duration(1000)
-        .call(xAxis);
+      var svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
+      svgCharts[0].forEach(function(d) {
+        // If the chart is active, transition.  Otherwise, don't.
+        d = d3.select(d);
+        if (d.classed("chartActive")) {
+          d.select(".area.below")
+            .transition()
+            .duration(1000)
+            .attr("d", function(d) {
+              return valueArea.y0(y(0))(d.series[d.state]);
+            });
+
+          // Draw the axes.
+          d.select(".x.axis")
+            .transition()
+            .duration(1000)
+            .call(xAxis);
+        } else {
+          d.select(".area.below")
+            .attr("d", function(d) {
+              return valueArea.y0(y(0))(d.series[d.state]);
+            });
+
+          // Draw the axes.
+          d.select(".x.axis")
+            .call(xAxis);
+        }
       /*
       svgCharts.select(".yAxis")
         .transition()
@@ -499,6 +514,7 @@
         .ease("cubic-out")
         .call(yAxis);
       */
+      });
     }
 
 </script>
