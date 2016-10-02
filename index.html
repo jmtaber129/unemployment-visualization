@@ -153,9 +153,7 @@
       <input type="radio" name="comparison" value="none" checked> No Comparison<br>
       <input type="radio" name="comparison" value="state" display="inline"> State:
       <br>&emsp;&emsp;
-      <select class="stateComparisonOptions" name="states" disabled>
-        <option value="texas">Texas</option>
-        <option value="nationalAverage">National Average</option>
+      <select id="stateComparisonOptions" name="states" disabled>
       </select>
       <br>
       <input type="radio" name="comparison" value="years"> Years:
@@ -171,7 +169,7 @@
       </select>
       <br>
       <br>
-      <button id="updateCharts" onclick=updateCharts()>Update Charts</button>
+      <button id="updateCharts" onclick=updateCharts()>Update Chart Options</button>
     </div>
     <div id="usMap">
       <svg></svg>
@@ -237,15 +235,15 @@
     $(document.getElementsByName("comparison")).on("click", function() {
       var _this = this;
       if (_this.value == "state") {
-        $(".stateComparisonOptions").attr("disabled", false);
+        $("#stateComparisonOptions").attr("disabled", false);
         $(".yearComparisonOptions").attr("disabled", true);
         $(".timePeriodSelector").attr("disabled", false);
       } else if (_this.value == "years") {
-        $(".stateComparisonOptions").attr("disabled", true);
+        $("#stateComparisonOptions").attr("disabled", true);
         $(".yearComparisonOptions").attr("disabled", false);
         $(".timePeriodSelector").attr("disabled", true);
       } else {
-        $(".stateComparisonOptions").attr("disabled", true);
+        $("#stateComparisonOptions").attr("disabled", true);
         $(".yearComparisonOptions").attr("disabled", true);
         $(".timePeriodSelector").attr("disabled", false);
       }
@@ -357,6 +355,33 @@
         stateChartData.push(d);
       }
       
+      // Populate the state selection and comparison lists.
+      var stateOptions = d3.select("#stateOptions");
+      var stateComparisons = d3.select("#stateComparisonOptions");
+      
+      stateChartData.forEach(function(d) {
+        var option = stateOptions
+            .append("label")
+            .datum(d.state);
+        option.append("input")
+          .attr("type", "checkbox")
+          .attr("checked", true)
+          .attr("name", "stateSelection")
+          .attr("id", function(d) { return d.replace(/\s+/g, ''); })
+          .on("click", changeChartDisplay);
+        option.append("text")
+          .text(d.state);
+        option.append("br");
+        
+        var comparison = stateComparisons.append("option")
+            .datum(d.state)
+            .attr("value", function(d) {
+              return d.replace(/\s+/g, '');
+            })
+            .text(d.state);
+            
+      });
+      
       // Scale the range of the data
       x.domain(d3.extent(data, function(d) { return d.date; }));
       y.domain([0, d3.max(data, function(d) { return d.unemployment; })])
@@ -467,23 +492,6 @@
         .style("font", "20px Arial")
         .attr("fill", "#888")
         .text(function(d) { return d; });
-        
-      //Populate the state selection list.
-      var stateOptions = d3.select("#stateOptions");
-      stateChartData.forEach(function(d) {
-        var option = stateOptions
-            .append("label")
-            .datum(d.state);
-        option.append("input")
-          .attr("type", "checkbox")
-          .attr("checked", true)
-          .attr("name", "stateSelection")
-          .attr("id", function(d) { return d.replace(/\s+/g, ''); })
-          .on("click", changeChartDisplay);
-        option.append("text")
-          .text(d.state);
-        option.append("br");
-      });
       
       
     });
