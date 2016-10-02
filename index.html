@@ -56,7 +56,7 @@
     padding: 10px;
   }
   #stateOptions {
-    height: 200px;
+    height: 250px;
     width: 35%;
     float: left;
     border-style: solid;
@@ -101,50 +101,47 @@
             From: &ensp;
           </td>
           <td>
-            <select class="timePeriodSelector" name="month">
-              <option value="1">Jan</option>
-              <option value="2">Feb</option>
-              <option value="3">Mar</option>
-              <option value="4">Apr</option>
-              <option value="5">May</option>
-              <option value="6">Jun</option>
-              <option value="7">Jul</option>
-              <option value="8">Aug</option>
-              <option value="9">Sep</option>
-              <option value="10">Oct</option>
-              <option value="11">Nov</option>
-              <option value="12">Dec</option>
+            <select id="fromMonth" class="timePeriodSelector">
+              <option value="Jan">Jan</option>
+              <option value="Feb">Feb</option>
+              <option value="Mar">Mar</option>
+              <option value="Apr">Apr</option>
+              <option value="May">May</option>
+              <option value="Jun">Jun</option>
+              <option value="Jul">Jul</option>
+              <option value="Aug">Aug</option>
+              <option value="Sep">Sep</option>
+              <option value="Oct">Oct</option>
+              <option value="Nov">Nov</option>
+              <option value="Dec">Dec</option>
             </select>
-            <select class="timePeriodSelector" name="year">
-              <option value="1978">1978</option>
-              <option value="2016">2016</option>
+            <select id="fromYear" class="timePeriodSelector">
             </select>
           </td>
         </tr>
         <tr>
           <td>To: &emsp;&ensp;</td>
           <td>
-            <select class="timePeriodSelector" name="month">
-              <option value="1">Jan</option>
-              <option value="2">Feb</option>
-              <option value="3">Mar</option>
-              <option value="4">Apr</option>
-              <option value="5">May</option>
-              <option value="6">Jun</option>
-              <option value="7">Jul</option>
-              <option value="8">Aug</option>
-              <option value="9">Sep</option>
-              <option value="10">Oct</option>
-              <option value="11">Nov</option>
-              <option value="12">Dec</option>
+            <select id="toMonth" class="timePeriodSelector">
+              <option value="Jan">Jan</option>
+              <option value="Feb">Feb</option>
+              <option value="Mar">Mar</option>
+              <option value="Apr">Apr</option>
+              <option value="May">May</option>
+              <option value="Jun">Jun</option>
+              <option value="Jul">Jul</option>
+              <option value="Aug">Aug</option>
+              <option value="Sep">Sep</option>
+              <option value="Oct">Oct</option>
+              <option value="Nov">Nov</option>
+              <option value="Dec">Dec</option>
             </select>
-            <select class="timePeriodSelector" name="year">
-              <option value="1978">1978</option>
-              <option value="2016">2016</option>
+            <select id="toYear" class="timePeriodSelector">
             </select>
           </td>
         </tr>
       </table>
+      <button id="updatePeriod" onclick=updatePeriod()>Update Time Period</button>
     </div>
     <div id="comparisonOptions">
       <h4>Compare to:</h4>
@@ -227,6 +224,9 @@
         });
     });
     
+    
+    
+    // Set up selection controls.
     $(document.getElementsByName("comparison")).on("click", function() {
       var _this = this;
       if (_this.value == "state") {
@@ -252,6 +252,17 @@
         }
       }
     }
+    
+    var fromYearSelection = d3.select("#fromYear");
+    var toYearSelection = d3.select("#toYear");
+    for (var i = 1978; i <= 2016; ++i) {
+      fromYearSelection.append("option")
+        .attr("value", i)
+        .text(i);
+      toYearSelection.append("option")
+        .attr("value", i)
+        .text(i);
+    }
 
     //Width and height
     var margin = {top: 30, right: 20, bottom: 30, left: 50};
@@ -268,7 +279,7 @@
     var y = d3.scale.linear().range([h, 0]);
     
     // Define the axes.
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(10);
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(10).tickFormat(d3.time.format("%b '%y"));
     var yAxis = d3.svg.axis().scale(y).orient("left").ticks(6);
     
     // Define the line.
@@ -348,7 +359,14 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
+      svgCharts.append("defs").append("clipPath")
+          .attr("id", "clip")
+        .append("rect")
+          .attr("width", w)
+          .attr("height", h);
+      
       svgCharts.append("path")
+        .attr("clip-path", "url(#clip)")
         .attr("class", "line")
         .attr("d", function(d) {
           return zeroline(d.series[d.state]);
@@ -378,7 +396,7 @@
       svgCharts.append("text")
         .datum(function(d) { return d.state; })
         .attr("x", w)
-        .attr("y", margin.top)
+        .attr("y", 0)
         .attr("text-anchor", "end")
         .style("font", "20px Arial")
         .attr("fill", "#888")
@@ -430,6 +448,38 @@
       stateChart.classed("chartActive", !active);
       stateMap.classed("active", !active);
       stateMap.classed("inactive", active);
+    }
+    
+    function updatePeriod() {
+      var fromYear = document.getElementById("fromYear").value;
+      var fromMonth = document.getElementById("fromMonth").value;
+      var toYear = document.getElementById("toYear").value;
+      var toMonth = document.getElementById("toMonth").value;
+      var fromDate = parseDate(fromMonth + "-" + fromYear);
+      var toDate = parseDate(toMonth + "-" + toYear);
+      x.domain([fromDate, toDate]);
+      
+      // Update the charts.
+      svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
+      svgCharts.select("path")
+        .transition()
+        .duration(1000)
+        .attr("d", function(d) {
+          return valueline(d.series[d.state]);
+        });
+      
+      // Draw the axes.
+      svgCharts.select(".x.axis")
+        .transition()
+        .duration(1000)
+        .call(xAxis);
+      /*
+      svgCharts.select(".yAxis")
+        .transition()
+        .duration(1000)
+        .ease("cubic-out")
+        .call(yAxis);
+      */
     }
 
 </script>
