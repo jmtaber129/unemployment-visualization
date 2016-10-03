@@ -268,6 +268,9 @@
         .attr("value", i)
         .text(i);
     }
+    
+    document.getElementById("toYear").value = "2016";
+    document.getElementById("toMonth").value = "Jul";
 
     //Width and height
     var margin = {top: 30, right: 20, bottom: 30, left: 50};
@@ -380,12 +383,9 @@
             
       });
       
-      document.getElementById("toYear").value = "2016";
-      document.getElementById("toMonth").value = "Jul";
-      
       // Scale the range of the data
       x.domain(d3.extent(data, function(d) { return d.date; }));
-      y.domain([0, d3.max(data, function(d) { return d.unemployment; })])
+      y.domain([0, d3.max(data, function(d) { return d.unemployment; })]);
       
       // Create the svgs for the charts.      
       svgCharts = d3.select("#unemploymentCharts").selectAll("svg")
@@ -541,6 +541,12 @@
     }
     
     function updateChartNoComparison() {
+      // Adjust the y scale.
+      this.each(function(d) {
+        y.domain([d3.min(d.series[d.state], function(a) { return a.unemployment; }),
+                  d3.max(d.series[d.state], function(a) { return a.unemployment; })]);
+      });
+      
       this.select(".area.below")
         .attr("d", function(d) {
           return valueArea.y0(y(0))(d.series[d.state]);
@@ -564,17 +570,19 @@
       this.select(".x.axis")
         .call(xAxis);
       
-      /*
-      svgCharts.select(".yAxis")
-        .transition()
-        .duration(1000)
-        .ease("cubic-out")
+      this.select(".y.axis")
         .call(yAxis);
-      */
+      
     }
     
     function updateChartStateComparison(d) {
       var comparedState = document.getElementById("stateComparisonOptions").value;
+      
+      // Adjust the y scale.
+      this.each(function(d) {
+        y.domain([d3.min(d.series[d.state].concat(d.series[comparedState]), function(a) { return a.unemployment; }),
+                  d3.max(d.series[d.state].concat(d.series[comparedState]), function(a) { return a.unemployment; })]);
+      });
       
       // Update areas.
       this.select(".area.below")
@@ -604,6 +612,9 @@
       
       this.select(".x.axis")
         .call(xAxis);
+      
+      this.select(".y.axis")
+        .call(yAxis);
     }
     
     function updateCharts() {
