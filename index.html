@@ -421,8 +421,9 @@
       defs.append("clipPath")
           .attr("id", "sideClip")
         .append("rect")
+          .attr("transform", "translate(0,-" + margin.top + ")")
           .attr("width", w)
-          .attr("height", h);
+          .attr("height", h + margin.top);
       
       // Above and below clip-paths.
       defs.append("clipPath")
@@ -502,7 +503,7 @@
     }
     
     function updateClipAbove(d) {
-      return valueArea.y0(0)(d.series[d.state]);
+      return valueArea.y0(-margin.top)(d.series[d.state]);
     }
     
     function changeChartDisplay(d) {
