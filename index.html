@@ -173,7 +173,7 @@
       </select>
       <br>
       <br>
-      <button id="updateCharts" onclick=updateCharts()>Update Chart Options</button>
+      <button id="updateCharts">Update Chart Options</button>
     </div>
     <div id="usMap">
       <svg></svg>
@@ -490,7 +490,11 @@
         .attr("fill", "#888")
         .text(function(d) { return d; });
       
-      updateCharts();      
+      updateCharts();
+      
+      // Add an on-click for the update chart options button.
+      d3.select("#updateCharts")
+        .on("click", function(d) { return updateCharts() });
     });
     
     function removeWhitespace(str) {
