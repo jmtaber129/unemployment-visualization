@@ -287,8 +287,8 @@
     var y = d3.scale.linear().range([h, 0]);
     
     // Define the axes.
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(10).tickFormat(d3.time.format("%b '%y"));
-    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(6);
+    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(7).tickFormat(d3.time.format("%b '%y"));
+    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
     
     // Define the line.
     var valueline = d3.svg.line()
@@ -453,40 +453,17 @@
           return zeroArea(d.series[d.state]);
         });
       
-      // Draw the area.
-      svgCharts.select(".area.below")
-        .transition()
-        .delay(100)
-        .duration(1000)
-        .ease("cubic-out")
-        .attr("d", function(d) {
-          var y0 = function(a,i) {
-            return y(d.series["Texas"][i].unemployment);
-          };
-          return valueArea.y0(y(0))(d.series[d.state]);
-        });
-      
-      svgCharts.select(".area.above")
-        .transition()
-        .delay(100)
-        .duration(1000)
-        .ease("cubic-out")
-        .attr("d", function(d) {
-          var y0 = function(a,i) {
-            return y(d.series["Texas"][i].unemployment);
-          };
-          return valueArea.y0(y(0))(d.series[d.state]);
-        });
+      // Area gets drawn in updateCharts()
       
       // Draw the axes.
       svgCharts.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + h + ")")
-        .call(xAxis);
+        .attr("transform", "translate(0," + h + ")");
+        //.call(xAxis);
       
       svgCharts.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
+        .attr("class", "y axis");
+        //.call(yAxis);
       
       svgCharts.append("text")
         .datum(function(d) { return d.state; })
@@ -497,7 +474,7 @@
         .attr("fill", "#888")
         .text(function(d) { return d; });
       
-      
+      updateCharts();      
     });
     
     function removeWhitespace(str) {
@@ -540,11 +517,26 @@
       stateMap.classed("inactive", active);
     }
     
-    function updateChartNoComparison() {
+    function updateChartNoComparison(d, fromDate, toDate) {
       // Adjust the y scale.
       this.each(function(d) {
-        y.domain([d3.min(d.series[d.state], function(a) { return a.unemployment; }),
-                  d3.max(d.series[d.state], function(a) { return a.unemployment; })]);
+        y.domain([d3.min(d.series[d.state], 
+                         function(a) {
+                            // Check if the date is outside the displayed range.
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (datumDate > toDate || datumDate < fromDate) {
+                              return 100;
+                            }
+                            return a.unemployment;
+                          }),
+                  d3.max(d.series[d.state], 
+                         function(a) {
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (datumDate > toDate || datumDate < fromDate) {
+                              return 0;
+                            }
+                            return a.unemployment;
+                          })]);
       });
       
       this.select(".area.below")
@@ -575,13 +567,28 @@
       
     }
     
-    function updateChartStateComparison(d) {
+    function updateChartStateComparison(d, fromDate, toDate) {
       var comparedState = document.getElementById("stateComparisonOptions").value;
       
       // Adjust the y scale.
       this.each(function(d) {
-        y.domain([d3.min(d.series[d.state].concat(d.series[comparedState]), function(a) { return a.unemployment; }),
-                  d3.max(d.series[d.state].concat(d.series[comparedState]), function(a) { return a.unemployment; })]);
+        y.domain([d3.min(d.series[d.state].concat(d.series[comparedState]), 
+                         function(a) {
+                            // Check if the date is outside the displayed range.
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (datumDate > toDate || datumDate < fromDate) {
+                              return 100;
+                            }
+                            return a.unemployment;
+                          }),
+                  d3.max(d.series[d.state].concat(d.series[comparedState]), 
+                         function(a) {
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (datumDate > toDate || datumDate < fromDate) {
+                              return 0;
+                            }
+                            return a.unemployment;
+                          })]);
       });
       
       // Update areas.
@@ -641,12 +648,12 @@
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
             .transition().duration(transDuration)
-            .call(updateChartNoComparison);
+            .call(updateChartNoComparison, fromDate, toDate);
         });
         allCharts.each(function() {
           d = d3.select(this);
           if (!d.classed("chartActive")) {
-            d.call(updateChartNoComparison);
+            d.call(updateChartNoComparison, fromDate, toDate);
           }
         });
       } else if (document.getElementById("stateComparison").checked) {
@@ -655,13 +662,13 @@
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
             .transition().duration(transDuration)
-            .call(updateChartStateComparison);
+            .call(updateChartStateComparison, fromDate, toDate);
         });
         
         allCharts.each(function() {
           d = d3.select(this);
           if (!d.classed("chartActive")) {
-            d.call(updateChartStateComparison);
+            d.call(updateChartStateComparison, fromDate, toDate);
           }
         });
       } else {
