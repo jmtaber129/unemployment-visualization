@@ -22,14 +22,14 @@
     fill: orange;
   }
   .area.below {
-    fill: steelblue;
+    /*fill: rgb(145,207,96);*/
   }
   .area.above {
-    fill: rgb(145,207,96);
+    fill: rgb(252,141,89);
   }
   .baseLine { 
     stroke: black;
-    stroke-width: 2;
+    stroke-width: 1.5;
     fill: none;
   }
   #usMap path:hover {
@@ -291,7 +291,7 @@
     var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
     
     // Define the line.
-    var valueline = d3.svg.line()
+    var valueLine = d3.svg.line()
         .x(function(d) { 
           return x(d.date);
         })
@@ -299,7 +299,7 @@
           return y(d.unemployment);
         });
     
-    var zeroline = d3.svg.line()
+    var zeroLine = d3.svg.line()
         .x(function(d) {
           return x(d.date);
         })
@@ -434,12 +434,21 @@
         .append("path")
           .attr("d", updateClipAbove);
       
+      // Add the baseline.
+      svgCharts.append("path")
+        .attr("clip-path", "url(#sideClip)")
+        .attr("class", "baseline")
+        .attr("d", function(d) {
+          return zeroLine(d.series[d.state]);
+        });
+      
       // Add the areas.
       svgCharts.append("path")
         .attr("clip-path", function(d) {
           return "url(#clip-below-" + removeWhitespace(d.state) + ")";
         })
         .attr("class", "area below")
+        .attr("fill", "steelblue")
         .attr("d", function(d) {
           return zeroArea(d.series[d.state]);
         });
@@ -519,16 +528,18 @@
     
     function updateChartNoComparison(d, fromDate, toDate) {
       // Adjust the y scale.
+      var min;
       this.each(function(d) {
-        y.domain([d3.min(d.series[d.state], 
-                         function(a) {
-                            // Check if the date is outside the displayed range.
-                            var datumDate = parseDate(a.month + "-" + a.year);
-                            if (datumDate > toDate || datumDate < fromDate) {
-                              return 100;
-                            }
-                            return a.unemployment;
-                          }),
+        min = d3.min(d.series[d.state], 
+                     function(a) {
+                        // Check if the date is outside the displayed range.
+                        var datumDate = parseDate(a.month + "-" + a.year);
+                        if (datumDate > toDate || datumDate < fromDate) {
+                          return 100;
+                        }
+                        return a.unemployment;
+                      })
+        y.domain([min, 
                   d3.max(d.series[d.state], 
                          function(a) {
                             var datumDate = parseDate(a.month + "-" + a.year);
@@ -540,13 +551,19 @@
       });
       
       this.select(".area.below")
+        .attr("fill", "steelblue")
         .attr("d", function(d) {
-          return valueArea.y0(y(0))(d.series[d.state]);
+          return valueArea.y0(y(min))(d.series[d.state]);
         });
       
       this.select(".area.above")
         .attr("d", function(d) {
-          return zeroArea(d.series[d.state]);
+          return valueArea.y0(y(min))(d.series[d.state]);
+        });
+      
+      this.select(".baseline")
+        .attr("d", function(d) {
+          return valueLine(d.series[d.state]);
         });
       
       // Update clip paths.
@@ -593,6 +610,7 @@
       
       // Update areas.
       this.select(".area.below")
+        .attr("fill", "rgb(145,207,96)")
         .attr("d", function(d) {
           var y0 = function(a,i) {
             return y(d.series[comparedState][i].unemployment);
@@ -605,6 +623,11 @@
             return y(d.series[comparedState][i].unemployment);
           };
           return valueArea.y0(y0)(d.series[d.state]);
+        });
+      
+      this.select(".baseline")
+        .attr("d", function(d) {
+          return valueLine(d.series[d.state]);
         });
       
       // Update clip paths.
@@ -640,14 +663,12 @@
       var activeCharts = d3.select("#unemploymentCharts").selectAll(".chartActive");
       var allCharts = d3.select("#unemploymentCharts").selectAll("svg");
       
-      var transDuration = (activeCharts[0].length < 25) ? 1000 : 1500;
-      
       if (document.getElementById("noComparison").checked) {
         // No comparison selected.
         activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
-            .transition().duration(transDuration)
+            .transition().duration(2000)
             .call(updateChartNoComparison, fromDate, toDate);
         });
         allCharts.each(function() {
@@ -661,7 +682,7 @@
         activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
-            .transition().duration(transDuration)
+            .transition().duration(2000)
             .call(updateChartStateComparison, fromDate, toDate);
         });
         
