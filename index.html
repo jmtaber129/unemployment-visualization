@@ -460,7 +460,7 @@
           var y0 = function(a,i) {
             return y(d.series["Texas"][i].unemployment);
           };
-          return valueArea.y0(y0)(d.series[d.state]);
+          return valueArea.y0(y(0))(d.series[d.state]);
         });
       
       svgCharts.select(".area.above")
@@ -472,7 +472,7 @@
           var y0 = function(a,i) {
             return y(d.series["Texas"][i].unemployment);
           };
-          return valueArea.y0(y0)(d.series[d.state]);
+          return valueArea.y0(y(0))(d.series[d.state]);
         });
       
       // Draw the axes.
