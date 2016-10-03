@@ -211,22 +211,22 @@
         });
       });
     
-    d3.json("us-states.json", function(json) {
+    d3.json("us-states.txt", function(json) {
       
-    // Bind the data to the SVG and create one path per GeoJSON feature
-    mapSvg.selectAll("path")
-        .data(json.features)
-        .enter()
-        .append("path")
-        .attr("d", path)
-        .attr("id", function(d) { return d.properties.name.replace(/\s+/g, ''); })
-        .style("stroke", "#fff")
-        .style("stroke-width", "1")
-        .classed("inactive", false)
-        .classed("active", true)
-        .on("click", function() {
-          changeChartDisplay(this.id);
-        });
+      // Bind the data to the SVG and create one path per GeoJSON feature
+      mapSvg.selectAll("path")
+          .data(json.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("id", function(d) { return d.properties.name.replace(/\s+/g, ''); })
+          .style("stroke", "#fff")
+          .style("stroke-width", "1")
+          .classed("inactive", false)
+          .classed("active", true)
+          .on("click", function() {
+            changeChartDisplay(this.id);
+          });
     });
     
     
