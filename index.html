@@ -409,7 +409,7 @@
           d3.select("#usMap").select("#" + removeWhitespace(d.state))
             .classed("chartHover", false);
         })
-        .on("click", function(d) {
+        .on("dblclick", function(d) {
           changeChartDisplay(d.state);
         })
         .append("g")
