@@ -375,7 +375,7 @@
         
         var comparison = stateComparisons.append("option")
             .datum(d.state)
-            .attr("value", removeWhitespace)
+            .attr("value", d.state)
             .text(d.state);
             
       });
@@ -407,12 +407,14 @@
       
       var defs = svgCharts.append("defs");
       
+      // Side clip-path.
       defs.append("clipPath")
           .attr("id", "sideClip")
         .append("rect")
           .attr("width", w)
           .attr("height", h);
       
+      // Above and below clip-paths.
       defs.append("clipPath")
           .attr("id", function(d) {
             return "clip-below-" + removeWhitespace(d.state);
@@ -429,6 +431,7 @@
         .append("path")
           .attr("d", updateClipAbove);
       
+      // Add the areas.
       svgCharts.append("path")
         .attr("clip-path", function(d) {
           return "url(#clip-below-" + removeWhitespace(d.state) + ")";
@@ -540,6 +543,62 @@
           return valueArea.y0(y(0))(d.series[d.state]);
         });
       
+      this.select(".area.above")
+        .attr("d", function(d) {
+          return zeroArea(d.series[d.state]);
+        });
+      
+      // Update clip paths.
+      var defs = this.select("defs");
+      defs.select("#clip-below-" + removeWhitespace(this[0][0].id))
+        .select("path")
+          .attr("d", updateClipBelow);
+      
+      defs.select("#clip-above-" + removeWhitespace(this[0][0].id))
+        .select("path")
+          .attr("d", updateClipAbove);
+      
+      this.select(".x.axis")
+        .call(xAxis);
+      
+      /*
+      svgCharts.select(".yAxis")
+        .transition()
+        .duration(1000)
+        .ease("cubic-out")
+        .call(yAxis);
+      */
+    }
+    
+    function updateChartStateComparison(d) {
+      var comparedState = document.getElementById("stateComparisonOptions").value;
+      
+      // Update areas.
+      this.select(".area.below")
+        .attr("d", function(d) {
+          var y0 = function(a,i) {
+            return y(d.series[comparedState][i].unemployment);
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
+        });
+      this.select(".area.above")
+        .attr("d", function(d) {
+          var y0 = function(a,i) {
+            return y(d.series[comparedState][i].unemployment);
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
+        });
+      
+      // Update clip paths.
+      var defs = this.select("defs");
+      defs.select("#clip-below-" + removeWhitespace(this[0][0].id))
+        .select("path")
+          .attr("d", updateClipBelow);
+      
+      defs.select("#clip-above-" + removeWhitespace(this[0][0].id))
+        .select("path")
+          .attr("d", updateClipAbove);
+      
       this.select(".x.axis")
         .call(xAxis);
     }
@@ -560,30 +619,34 @@
       var svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
       
       if (document.getElementById("noComparison").checked) {
-        
+        // No comparison selected.
+        svgCharts[0].forEach(function(d) {
+          // If the chart is active, transition.  Otherwise, don't.
+          d = d3.select(d);
+          if (d.classed("chartActive")) {
+            d.transition().duration(1000)
+              .call(updateChartNoComparison);
+          } else {
+            d.call(updateChartNoComparison);
+          }
+        });
       } else if (document.getElementById("stateComparison").checked) {
-        
+        // State comparisons selected.
+        svgCharts[0].forEach(function(d) {
+          // If the chart is active, transition.  Otherwise, don't.
+          d = d3.select(d);
+          if (d.classed("chartActive")) {
+            d.transition().duration(1000)
+              .call(updateChartStateComparison);
+          } else {
+            d.call(updateChartStateComparison);
+          }
+        });
       } else {
-        
+        // Year comparisons selected.
       }
       
-      svgCharts[0].forEach(function(d) {
-        // If the chart is active, transition.  Otherwise, don't.
-        d = d3.select(d);
-        if (d.classed("chartActive")) {
-          d.transition().duration(1000)
-            .call(updateChartNoComparison);
-        } else {
-          d.call(updateChartNoComparison);
-        }
-      /*
-      svgCharts.select(".yAxis")
-        .transition()
-        .duration(1000)
-        .ease("cubic-out")
-        .call(yAxis);
-      */
-      });
+      
     }
 
 </script>
