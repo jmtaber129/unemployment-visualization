@@ -633,12 +633,14 @@
       var activeCharts = d3.select("#unemploymentCharts").selectAll(".chartActive");
       var allCharts = d3.select("#unemploymentCharts").selectAll("svg");
       
+      var transDuration = (activeCharts[0].length < 25) ? 1000 : 1500;
+      
       if (document.getElementById("noComparison").checked) {
         // No comparison selected.
         activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
-            .transition().duration(1000)
+            .transition().duration(transDuration)
             .call(updateChartNoComparison);
         });
         allCharts.each(function() {
@@ -652,7 +654,7 @@
         activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
           d3.select(this)
-            .transition().duration(1000)
+            .transition().duration(transDuration)
             .call(updateChartStateComparison);
         });
         
