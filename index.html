@@ -421,25 +421,9 @@
       defs.append("clipPath")
           .attr("id", "sideClip")
         .append("rect")
+          .attr("transform", "translate(0,-" + margin.top + ")")
           .attr("width", w)
-          .attr("height", h);
-      
-      // Above and below clip-paths.
-      defs.append("clipPath")
-          .attr("id", function(d) {
-            return "clip-below-" + removeWhitespace(d.state);
-          })
-          .attr("clip-path", "url(#sideClip)")
-        .append("path")
-          .attr("d", updateClipBelow);
-      
-      defs.append("clipPath")
-          .attr("id", function(d) {
-            return "clip-above-" + removeWhitespace(d.state);
-          })
-          .attr("clip-path", "url(#sideClip)")
-        .append("path")
-          .attr("d", updateClipAbove);
+          .attr("height", h + margin.top);
       
       // Add the baseline.
       svgCharts.append("path")
@@ -451,9 +435,7 @@
       
       // Add the areas.
       svgCharts.append("path")
-        .attr("clip-path", function(d) {
-          return "url(#clip-below-" + removeWhitespace(d.state) + ")";
-        })
+        .attr("clip-path", "url(#sideClip)")
         .attr("class", "area below")
         .attr("fill", "steelblue")
         .attr("d", function(d) {
@@ -461,9 +443,7 @@
         });
       
       svgCharts.append("path")
-        .attr("clip-path", function(d) {
-          return "url(#clip-above-" + removeWhitespace(d.state) + ")";
-        })
+        .attr("clip-path", "url(#sideClip)")
         .attr("class", "area above")
         .attr("d", function(d) {
           return zeroArea(d.series[d.state]);
@@ -499,14 +479,6 @@
     
     function removeWhitespace(str) {
       return str.replace(/\s+/g, '');
-    }
-    
-    function updateClipBelow(d) {
-      return valueArea.y0(y(0))(d.series[d.state]);
-    }
-    
-    function updateClipAbove(d) {
-      return valueArea.y0(0)(d.series[d.state]);
     }
     
     function changeChartDisplay(d) {
@@ -569,23 +541,13 @@
       
       this.select(".area.above")
         .attr("d", function(d) {
-          return valueArea.y0(y(min))(d.series[d.state]);
+          return zeroArea.y0(y(min))(d.series[d.state]);
         });
       
       this.select(".baseline")
         .attr("d", function(d) {
           return valueLine(d.series[d.state]);
         });
-      
-      // Update clip paths.
-      var defs = this.select("defs");
-      defs.select("#clip-below-" + removeWhitespace(this[0][0].id))
-        .select("path")
-          .attr("d", updateClipBelow);
-      
-      defs.select("#clip-above-" + removeWhitespace(this[0][0].id))
-        .select("path")
-          .attr("d", updateClipAbove);
       
       this.select(".x.axis")
         .call(xAxis);
@@ -624,14 +586,15 @@
         .attr("fill", "rgb(145,207,96)")
         .attr("d", function(d) {
           var y0 = function(a,i) {
-            return y(d.series[comparedState][i].unemployment);
+            return y(d3.min([d.series[comparedState][i].unemployment, d.series[d.state][i].unemployment]));
           };
           return valueArea.y0(y0)(d.series[d.state]);
         });
       this.select(".area.above")
         .attr("d", function(d) {
           var y0 = function(a,i) {
-            return y(d.series[comparedState][i].unemployment);
+            return y(d3.max([d.series[comparedState][i].unemployment, d.series[d.state][i].unemployment]));
+            //return y(d.series[comparedState][i].unemployment);
           };
           return valueArea.y0(y0)(d.series[d.state]);
         });
@@ -640,16 +603,6 @@
         .attr("d", function(d) {
           return valueLine(d.series[d.state]);
         });
-      
-      // Update clip paths.
-      var defs = this.select("defs");
-      defs.select("#clip-below-" + removeWhitespace(this[0][0].id))
-        .select("path")
-          .attr("d", updateClipBelow);
-      
-      defs.select("#clip-above-" + removeWhitespace(this[0][0].id))
-        .select("path")
-          .attr("d", updateClipAbove);
       
       this.select(".x.axis")
         .call(xAxis);
