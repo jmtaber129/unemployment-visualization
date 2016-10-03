@@ -619,29 +619,35 @@
       x.domain([fromDate, toDate]);
       
       // Update the charts.
-      var svgCharts = d3.select("#unemploymentCharts").selectAll("svg");
+      var activeCharts = d3.select("#unemploymentCharts").selectAll(".chartActive");
+      var allCharts = d3.select("#unemploymentCharts").selectAll("svg");
       
       if (document.getElementById("noComparison").checked) {
         // No comparison selected.
-        svgCharts[0].forEach(function(d) {
+        activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
-          d = d3.select(d);
-          if (d.classed("chartActive")) {
-            d.transition().duration(1000)
-              .call(updateChartNoComparison);
-          } else {
+          d3.select(this)
+            .transition().duration(1000)
+            .call(updateChartNoComparison);
+        });
+        allCharts.each(function() {
+          d = d3.select(this);
+          if (!d.classed("chartActive")) {
             d.call(updateChartNoComparison);
           }
         });
       } else if (document.getElementById("stateComparison").checked) {
         // State comparisons selected.
-        svgCharts[0].forEach(function(d) {
+        activeCharts.each(function() {
           // If the chart is active, transition.  Otherwise, don't.
-          d = d3.select(d);
-          if (d.classed("chartActive")) {
-            d.transition().duration(1000)
-              .call(updateChartStateComparison);
-          } else {
+          d3.select(this)
+            .transition().duration(1000)
+            .call(updateChartStateComparison);
+        });
+        
+        allCharts.each(function() {
+          d = d3.select(this);
+          if (!d.classed("chartActive")) {
             d.call(updateChartStateComparison);
           }
         });
