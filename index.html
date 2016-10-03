@@ -425,8 +425,6 @@
           .attr("width", w)
           .attr("height", h + margin.top);
       
-      // Above and below clip-paths.
-      
       // Add the baseline.
       svgCharts.append("path")
         .attr("clip-path", "url(#sideClip)")
@@ -477,14 +475,6 @@
     
     function removeWhitespace(str) {
       return str.replace(/\s+/g, '');
-    }
-    
-    function updateClipBelow(d) {
-      return valueArea.y0(y(0))(d.series[d.state]);
-    }
-    
-    function updateClipAbove(d) {
-      return valueArea.y0(-margin.top)(d.series[d.state]);
     }
     
     function changeChartDisplay(d) {
@@ -555,9 +545,6 @@
           return valueLine(d.series[d.state]);
         });
       
-      // Update clip paths.
-      var defs = this.select("defs");
-      
       this.select(".x.axis")
         .call(xAxis);
       
@@ -612,9 +599,6 @@
         .attr("d", function(d) {
           return valueLine(d.series[d.state]);
         });
-      
-      // Update clip paths.
-      var defs = this.select("defs");
       
       this.select(".x.axis")
         .call(xAxis);
