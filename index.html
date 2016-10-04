@@ -32,6 +32,11 @@
     stroke-width: 1.5;
     fill: none;
   }
+  .focus circle {
+    fill: white;
+    stroke: black;
+    stroke-width: 2px;
+  }
   #usMap {
     border-style: solid;
     border-color: #CCC;
@@ -325,6 +330,8 @@
         .y0(y(0))
         .y1(y(0));
     
+    var bisectDate = d3.bisector(function(d) { return d.date; }).left;
+    
     
     // Process the unemployment data and make the charts.
     d3.csv("unemployment.csv", function(data) {
@@ -401,21 +408,17 @@
         .classed("chartActive", true)
         .attr("width", svgWidth)
         .attr("height", svgHeight)
-        .on("mouseover", function(d) {
-          d3.select("#usMap").select("#" + removeWhitespace(d.state))
-            .classed("chartHover", true);
-        })
-        .on("mouseout", function(d) {
-          d3.select("#usMap").select("#" + removeWhitespace(d.state))
-            .classed("chartHover", false);
-        })
-        .on("dblclick", function(d) {
-          changeChartDisplay(d.state);
-        })
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
       var defs = svgCharts.append("defs");
+      
+      // Add background.
+      svgCharts.append("rect")
+        .attr("transform", "translate(0,-" + margin.top + ")")
+        .attr("width", w)
+        .attr("height", h + margin.top + margin.bottom)
+        .attr("fill", "white");
       
       // Side clip-path.
       defs.append("clipPath")
@@ -455,11 +458,22 @@
       svgCharts.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + h + ")");
-        //.call(xAxis);
       
       svgCharts.append("g")
         .attr("class", "y axis");
-        //.call(yAxis);
+      
+      // Add focus circle and value.
+      var focus = svgCharts.append("g")
+        .attr("class", "focus")
+        .style("display", "none");
+      
+      focus.append("circle")
+        .attr("r", 3.5);
+      
+      focus.append("text")
+        .attr("x", 9)
+        .attr("y", -5)
+        .attr("dy", ".35em");
       
       svgCharts.append("text")
         .datum(function(d) { return d.state; })
@@ -469,6 +483,57 @@
         .style("font", "20px Arial")
         .attr("fill", "#888")
         .text(function(d) { return d; });
+      
+      // Register mouse handlers.
+      svgCharts.on("mouseover", function(d) {
+          d3.select("#usMap").select("#" + removeWhitespace(d.state))
+            .classed("chartHover", true);
+          var focus = d3.select(this).select(".focus");
+          focus.style("display", null);
+        })
+        .on("mouseout", function(d) {
+          d3.select("#usMap").select("#" + removeWhitespace(d.state))
+            .classed("chartHover", false);
+          var focus = d3.select(this).select(".focus");
+          focus.style("display", "none");
+        })
+        .on("mousemove", mousemove)
+        .on("dblclick", function(d) {
+          changeChartDisplay(d.state);
+        })
+      
+      function mousemove(d) {
+        var x0 = x.invert(d3.mouse(this)[0]);
+        var i = bisectDate(d.series[d.state], x0, 1);
+        var d0 = d.series[d.state][i - 1];
+        var d1 = d.series[d.state][i];
+        var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+        x0 = d3.mouse(this)[0];
+        var lineElement = d3.select(this).select(".baseline").node();
+        var BBox = lineElement.getBBox();
+        var pathLength = lineElement.getTotalLength();
+        var scale = pathLength/BBox.width;
+        
+        var beginning = x0, end = lineElement.getTotalLength();
+        while(true) {
+          var target = Math.floor((beginning + end) / 2);
+          var pos = lineElement.getPointAtLength(target);
+          if ((target === end || target === beginning ) && pos.x !== x0) {
+            break;
+          }
+          if (pos.x > x0) {
+            end = target;
+          } else if (pos.x < x0) {
+            beginning = target;
+          } else {
+            break;  // Position found.
+          }
+        }
+        
+        var focus = d3.select(this).select(".focus");
+        focus.attr("transform", "translate(" + x0 + "," + pos.y + ")");
+        focus.select("text").text(d.unemployment);
+      }
       
       updateCharts();
       
