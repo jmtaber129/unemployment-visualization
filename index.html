@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://d3js.org/d3.v3.js"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
 <title>US Unemployment Visualizations</title>
 </head>
 <style>
@@ -474,7 +474,7 @@
       
       // Add an on-click for the update chart options button.
       d3.select("#updateCharts")
-        .on("click", function(d) { return updateCharts() });
+        .on("click", function(d) { updateCharts() });
     });
     
     function removeWhitespace(str) {
@@ -629,31 +629,48 @@
       
       if (document.getElementById("noComparison").checked) {
         // No comparison selected.
-        activeCharts.each(function() {
+        activeCharts[0].forEach(function(d, i, array) {
           // If the chart is active, transition.  Otherwise, don't.
-          d3.select(this)
-            .transition().duration(2000)
-            .call(updateChartNoComparison, fromDate, toDate);
-        });
-        allCharts.each(function() {
-          d = d3.select(this);
-          if (!d.classed("chartActive")) {
-            d.call(updateChartNoComparison, fromDate, toDate);
+          if (array[i].id == array[array.length - 1].id) {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartNoComparison, fromDate, toDate)
+              .each("end", function(a) {
+                allCharts[0].forEach(function(d) {
+                  d = d3.select(d);
+                  if (!d.classed("chartActive")) {
+                    d.call(updateChartNoComparison, fromDate, toDate);
+                  }
+                });
+              });
+            
+          } else {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartNoComparison, fromDate, toDate);
           }
         });
       } else if (document.getElementById("stateComparison").checked) {
         // State comparisons selected.
-        activeCharts.each(function() {
+        activeCharts[0].forEach(function(d, i, array) {
           // If the chart is active, transition.  Otherwise, don't.
-          d3.select(this)
-            .transition().duration(2000)
-            .call(updateChartStateComparison, fromDate, toDate);
-        });
-        
-        allCharts.each(function() {
-          d = d3.select(this);
-          if (!d.classed("chartActive")) {
-            d.call(updateChartStateComparison, fromDate, toDate);
+          if (array[i].id == array[array.length - 1].id) {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartStateComparison, fromDate, toDate)
+              .each("end", function(a) {
+                allCharts[0].forEach(function(d) {
+                  d = d3.select(d);
+                  if (!d.classed("chartActive")) {
+                    d.call(updateChartStateComparison, fromDate, toDate);
+                  }
+                });
+              });
+            
+          } else {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartStateComparison, fromDate, toDate);
           }
         });
       } else {
