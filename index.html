@@ -688,6 +688,12 @@
       var toDate = parseDate(toMonth + "-" + toYear);
       x.domain([fromDate, toDate]);
       
+      if (fromDate >= toDate) {
+        alert("Please select a valid time interval.\n" +
+              "\"From\" date cannot be after \"To\" date.");
+        return;
+      }
+      
       // Update the charts.
       var activeCharts = d3.select("#unemploymentCharts").selectAll(".chartActive");
       var allCharts = d3.select("#unemploymentCharts").selectAll("svg");
