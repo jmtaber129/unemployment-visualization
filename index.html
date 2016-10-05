@@ -165,16 +165,12 @@
       <select id="stateComparisonOptions" name="states" disabled>
       </select>
       <br>
-      <input type="radio" name="comparison" id="yearComparison" value="years" disabled> Years:
+      <input type="radio" name="comparison" id="yearComparison" value="years"> Years:
       <br>&emsp;&emsp;
-      <select class="yearComparisonOptions" name="years" disabled>
-        <option value="1978">1978</option>
-        <option value="2016">2016</option>
+      <select id="year1" class="yearComparisonOptions" name="years" disabled>
       </select>
       &ensp;and&ensp;
-      <select class="yearComparisonOptions" name="years" disabled>
-        <option value="1978">1978</option>
-        <option value="2016">2016</option>
+      <select id="year2" class="yearComparisonOptions" name="years" disabled>
       </select>
       <br>
       <br>
@@ -274,6 +270,17 @@
         .attr("value", i)
         .text(i);
       toYearSelection.append("option")
+        .attr("value", i)
+        .text(i);
+    }
+    
+    var yearSelection1 = d3.select("#year1");
+    var yearSelection2 = d3.select("#year2");
+    for (var i = 1978; i <= 2016; ++i) {
+      yearSelection1.append("option")
+        .attr("value", i)
+        .text(i);
+      yearSelection2.append("option")
         .attr("value", i)
         .text(i);
     }
@@ -687,6 +694,77 @@
         .call(yAxis);
     }
     
+    function updateChartYearComparison(d, year1, year2) {
+      var fromDate1 = new Date(year1, 0, 01, 0, 0, 0, 0);
+      var toDate1 = new Date(year1, 11, 01, 0, 0, 0, 0);
+      var fromDate2 = new Date(year2, 0, 01, 0, 0, 0, 0);
+      var toDate2 = new Date(year2, 11, 01, 0, 0, 0, 0);
+      
+      this.each(function(d) {
+        y.domain([d3.min(d.series[d.state], 
+                         function(a) {
+                            // Check if the date is outside the displayed range.
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (!((datumDate <= toDate1 && datumDate >= fromDate1) || (datumDate <= toDate2 && datumDate >= fromDate2))) {
+                              return 100;
+                            }
+                            return a.unemployment;
+                          }),
+                  d3.max(d.series[d.state], 
+                         function(a) {
+                            var datumDate = parseDate(a.month + "-" + a.year);
+                            if (!((datumDate <= toDate1 && datumDate >= fromDate1) || (datumDate <= toDate2 && datumDate >= fromDate2))) {
+                              return 0;
+                            }
+                            return a.unemployment;
+                          })]);
+      });
+      
+      x.domain([fromDate1, toDate1]);
+      
+      // Offset to obtain compared year unemployment value.
+      var iteratorOffset = 12 * (year1 - year2);
+      
+      // Update areas.
+      this.select(".area.below")
+        .attr("fill", "rgb(145,207,96)")
+        .attr("d", function(d) {
+          var y0 = function(a,i) {
+            // If the new iterator is within range, use that value.
+            if (!(i - iteratorOffset < 0 || i - iteratorOffset >= d.series[d.state].length)) {
+              return y(d3.min([d.series[d.state][i - iteratorOffset].unemployment, d.series[d.state][i].unemployment]));
+            } else {
+              //return y(0);
+              return y(d.series[d.state][i].unemployment);
+            }
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
+        });
+      this.select(".area.above")
+        .attr("d", function(d) {
+          var y0 = function(a,i) {
+            // If the new iterator is within range, use that value.
+            if (!(i - iteratorOffset < 0 || i - iteratorOffset >= d.series[d.state].length)) {
+              return y(d3.max([d.series[d.state][i - iteratorOffset].unemployment, d.series[d.state][i].unemployment]));
+            } else {
+              return y(d.series[d.state][i].unemployment);
+            }
+          };
+          return valueArea.y0(y0)(d.series[d.state]);
+        });
+      
+      this.select(".baseline")
+        .attr("d", function(d) {
+          return valueLine(d.series[d.state]);
+        });
+      
+      this.select(".x.axis")
+        .call(xAxis.tickFormat(d3.time.format("%b")));
+      
+      this.select(".y.axis")
+        .call(yAxis);
+    }
+    
     function updateCharts() {
       // Get chart settings.
       
@@ -697,6 +775,8 @@
       var toMonth = document.getElementById("toMonth").value;
       var fromDate = parseDate(fromMonth + "-" + fromYear);
       var toDate = parseDate(toMonth + "-" + toYear);
+      var year1 = document.getElementById("year1").value;
+      var year2 = document.getElementById("year2").value;
       x.domain([fromDate, toDate]);
       
       if (fromDate >= toDate) {
@@ -757,6 +837,27 @@
         });
       } else {
         // Year comparisons selected.
+        activeCharts[0].forEach(function(d, i, array) {
+          // If the chart is active, transition.  Otherwise, don't.
+          if (array[i].id == array[array.length - 1].id) {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartYearComparison, year1, year2)
+              .each("end", function(a) {
+                allCharts[0].forEach(function(d) {
+                  d = d3.select(d);
+                  if (!d.classed("chartActive")) {
+                    d.call(updateChartYearComparison, year1, year2);
+                  }
+                });
+              });
+            
+          } else {
+            d3.select(d)
+              .transition().duration(2000)
+              .call(updateChartYearComparison, year1, year2);
+          }
+        });
       }
       
       
