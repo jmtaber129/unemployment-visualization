@@ -549,8 +549,15 @@
         }
         
         var focus = d3.select(this).select(".focus");
+        if (x0 > w / 2) {
+          focus.select("text").attr("x", -9);
+          focus.select("text").attr("text-anchor", "end");
+        } else {
+          focus.select("text").attr("x", 9);
+          focus.select("text").attr("text-anchor", "start");
+        }
         focus.attr("transform", "translate(" + x0 + "," + pos.y + ")");
-        focus.select("text").text(d.unemployment);
+        focus.select("text").text((d.date.getMonth() + 1) + "/" + d.date.getFullYear() + ": " + d.unemployment);
       }
       
       updateCharts();
