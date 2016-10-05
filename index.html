@@ -276,7 +276,7 @@
     
     var yearSelection1 = d3.select("#year1");
     var yearSelection2 = d3.select("#year2");
-    for (var i = 1978; i <= 2016; ++i) {
+    for (var i = 1978; i <= 2015; ++i) {
       yearSelection1.append("option")
         .attr("value", i)
         .text(i);
@@ -640,7 +640,7 @@
         });
       
       this.select(".x.axis")
-        .call(xAxis);
+        .call(xAxis.tickFormat(d3.time.format("%b '%y")));
       
       this.select(".y.axis")
         .call(yAxis);
@@ -695,7 +695,7 @@
         });
       
       this.select(".x.axis")
-        .call(xAxis);
+        .call(xAxis.tickFormat(d3.time.format("%b '%y")));
       
       this.select(".y.axis")
         .call(yAxis);
