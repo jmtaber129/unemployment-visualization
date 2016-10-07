@@ -106,7 +106,7 @@
     <h4>States shown:</h4>
     <div id="stateOptions">
       <!-- State checkboxes -->
-      <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this) checked> Select All<br>
+      <input type="checkbox" id ="all" name="stateSelection" onClick=selectAll(this)> Select All<br>
     </div>
     <div id="timeOptions">
       <h4>Time Period:</h4>
@@ -227,8 +227,12 @@
           .attr("id", function(d) { return d.properties.name.replace(/\s+/g, ''); })
           .style("stroke", "#fff")
           .style("stroke-width", "1")
-          .classed("inactive", false)
-          .classed("active", true)
+          .classed("inactive", function(d) {
+            return (d.properties.name != "Texas");
+          })
+          .classed("active", function(d) {
+            return (d.properties.name == "Texas");
+          })
           .on("click", function() {
             changeChartDisplay(this.id);
           });
@@ -386,14 +390,20 @@
             .datum(d.state);
         option.append("input")
           .attr("type", "checkbox")
-          .attr("checked", true)
+          .property("checked", function(d) { 
+            return (d == "Texas" || d == "National Average")
+          })
           .attr("name", "stateSelection")
           .attr("id", removeWhitespace)
           .on("click", changeChartDisplay);
         option.append("text")
           .text(d.state);
         option.append("br");
-        
+        /*
+        if (d.state == "Texas" || d.state == "National Average") {
+          option.select("input").attr("checked", true);
+        }
+        */
         var comparison = stateComparisons.append("option")
             .datum(d.state)
             .attr("value", d.state)
@@ -412,9 +422,15 @@
         .append("svg")
         .style("display", "block")
         .attr("id", function(d) { return removeWhitespace(d.state); })
-        .classed("chartActive", true)
+        .classed("chartActive", function(d) { return d.state == "National Average" || d.state == "Texas"; })
         .attr("width", svgWidth)
-        .attr("height", svgHeight)
+        .attr("height", function(d) {
+          if (d.state == "National Average" || d.state == "Texas") {
+            return svgHeight;
+          } else {
+            return 0;
+          }
+        })
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
@@ -795,6 +811,11 @@
       // Update the charts.
       var activeCharts = d3.select("#unemploymentCharts").selectAll(".chartActive");
       var allCharts = d3.select("#unemploymentCharts").selectAll("svg");
+      var inactiveCharts = allCharts.filter(function(obj) {
+        return !activeCharts[0].some(function(obj2) {
+          return removeWhitespace(obj.state) == obj2.id;
+        });
+      });
       
       if (document.getElementById("noComparison").checked) {
         // No comparison selected.
@@ -805,11 +826,9 @@
               .transition().duration(2000)
               .call(updateChartNoComparison, fromDate, toDate)
               .each("end", function(a) {
-                allCharts[0].forEach(function(d) {
+                inactiveCharts[0].forEach(function(d) {
                   d = d3.select(d);
-                  if (!d.classed("chartActive")) {
-                    d.call(updateChartNoComparison, fromDate, toDate);
-                  }
+                  d.call(updateChartNoComparison, fromDate, toDate);
                 });
               });
             
@@ -828,11 +847,9 @@
               .transition().duration(2000)
               .call(updateChartStateComparison, fromDate, toDate)
               .each("end", function(a) {
-                allCharts[0].forEach(function(d) {
+                inactiveCharts[0].forEach(function(d) {
                   d = d3.select(d);
-                  if (!d.classed("chartActive")) {
-                    d.call(updateChartStateComparison, fromDate, toDate);
-                  }
+                  d.call(updateChartStateComparison, fromDate, toDate);
                 });
               });
             
@@ -851,11 +868,9 @@
               .transition().duration(2000)
               .call(updateChartYearComparison, year1, year2)
               .each("end", function(a) {
-                allCharts[0].forEach(function(d) {
+                inactiveCharts[0].forEach(function(d) {
                   d = d3.select(d);
-                  if (!d.classed("chartActive")) {
-                    d.call(updateChartYearComparison, year1, year2);
-                  }
+                  d.call(updateChartYearComparison, year1, year2);
                 });
               });
             
