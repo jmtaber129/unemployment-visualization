@@ -19,5 +19,3 @@ From the visualization, it is obvious that Hurricane Katrina (Aug. 2005) had a s
 Another interesting finding from the visualization is the variety of effects the '08-09 financial crisis had on different state's unemployment.  For some states, the viewer can see that unemployment rose gradually over several years before peaking.  In Nevada, for example, the rate rose from 5.6% in Jan 2008 before peaking at around 13.5% throughout 2010.  In other states, unemployment rose sharply over the course of a few months before peaking.  In Oregon, the rate rose from 6.4% in Sept 2008 before peaking 5 months later in March 2009.  For a few states, like Alaska, the crisis had little to no effect on local unemployment.
 
 ![Alt text](/screenshots/financial-crisis-09.PNG?raw=true "08-09 Financial Crisis")
-
-TODO(jmtaber129): Add more findings here.
