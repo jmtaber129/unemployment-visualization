@@ -485,6 +485,14 @@
       svgCharts.append("g")
         .attr("class", "y axis");
       
+      // Add y-axis label.
+      svgCharts.append("text")
+        .attr("text-anchor", "end")
+        .attr("y", 6)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text("Rate(%)")
+      
       // Add focus circle and value.
       var focus = svgCharts.append("g")
         .attr("class", "focus")
@@ -573,7 +581,7 @@
           focus.select("text").attr("text-anchor", "start");
         }
         focus.attr("transform", "translate(" + x0 + "," + pos.y + ")");
-        focus.select("text").text((d.date.getMonth() + 1) + "/" + d.date.getFullYear() + ": " + d.unemployment);
+        focus.select("text").text((d.date.getMonth() + 1) + "/" + d.date.getFullYear() + ": " + d.unemployment + "%");
       }
       
       updateCharts();
