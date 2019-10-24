@@ -4,7 +4,7 @@ An interactive time series visualization of US unemployment data using D3.  Crea
 #### Click the image below to watch a short video demo.
 [![ScreenShot](http://myweb.ttu.edu/jataber/unemployment/p1.taber.james.png)](https://youtu.be/Eg6DPIKl2Ks)
 
-The web application can be viewed at www.myweb.ttu.edu/jataber/unemployment.
+The web application can be viewed at https://jmtaber129.github.io/unemployment-visualization/.
 
 The application, which presents unemployment time series through small multiples, provides several different features for analyzing unemployment trends in the US.  The application provides an intuitive user interface, including a state selection list, time interval options, and series comparison options.  Users can also select states from an interactive map of the US.  To compare states or years, users select the corresponding option, and click the "Update Chart Options" button.  The application then displays a difference chart for each series, in which the positive and negative differences between the compared features are emphasized by colored areas above and below the original series' line.
 
